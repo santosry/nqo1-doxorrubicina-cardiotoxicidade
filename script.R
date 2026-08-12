@@ -493,6 +493,8 @@ plot_ppi_network <- function() {
   audit_log("INFO", "ppi", "Lendo STRING protein info.")
   info <- as.data.frame(data.table::fread(info_path, quote = "", stringsAsFactors = FALSE))
   names(info) <- standardize_names(names(info))
+  # STRING protein.info tem cabecalho com prefixo '#': remove para normalizar
+  names(info) <- stringr::str_replace_all(names(info), "^#", "")
   if ("X_string_protein_id" %in% names(info)) {
     names(info)[names(info) == "X_string_protein_id"] <- "string_protein_id"
   }

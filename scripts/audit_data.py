@@ -190,9 +190,7 @@ def main() -> dict:
         except Exception as e:  # noqa: BLE001
             return {"present": True, "error": str(e)}
 
-    gsva_new = ampk_dir / "GSVA_AMPK_results.csv"
-    gsva_old = ampk_dir / "GSVA_AMPK_scores_per_sample.csv"
-    gsva_path = gsva_new if gsva_new.exists() else gsva_old
+    gsva_path = ampk_dir / "GSVA_AMPK_results.csv"
 
     report["outputs_integrity"] = {
         "DEG_full_table.csv": _csv_stats(ampk_dir / "DEG_full_table.csv"),
