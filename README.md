@@ -43,18 +43,35 @@ independentes**, sendo a resposta correta do estudo.
 
 ---
 
+## Documentação
+
+| Documento | Conteúdo |
+|---|---|
+| [`NARRATIVA_FINAL_OFICIAL.md`](NARRATIVA_FINAL_OFICIAL.md) | Narrativa oficial do estudo — os 3 passos (AMPK → NQO1 → Doxorrubicina) |
+| [`JUSTIFICATIVA_CIENTIFICA.md`](JUSTIFICATIVA_CIENTIFICA.md) | Racional científico robusto do desenho do estudo |
+| [`IMPLICACOES_CLINICAS_ENFERMAGEM.md`](IMPLICACOES_CLINICAS_ENFERMAGEM.md) | Implicações clínicas e de enfermagem (com limitações honestas) |
+| [`AUDIT_REPORT.md`](AUDIT_REPORT.md) | Auditoria de integridade de dados (pré-commit) |
+| [`ANALISES_BIOINFORMATICA_PASSO_A_PASSO.md`](ANALISES_BIOINFORMATICA_PASSO_A_PASSO.md) | Guia passo a passo das 7 análises bioinformáticas (dados secundários) |
+| [`TODO_FUTURE_ANALYSES.md`](TODO_FUTURE_ANALYSES.md) | Roadmap priorizado de análises futuras |
+| [`config.yaml`](config.yaml) · [`DESCRIPTION`](DESCRIPTION) · [`requirements.txt`](requirements.txt) | Configuração e dependências |
+
+---
+
 ## 2. Estrutura do Repositório
 
 ```
 .
-├── NARRATIVA_FINAL_OFICIAL.md   # Narrativa oficial (3 passos)
-├── README.md                    # Este documento
-├── AUDIT_REPORT.md              # Auditoria de dados (pré-commit)
-├── config.yaml                  # Thresholds + contexto centralizados
-├── DESCRIPTION                  # Dependências R (Imports/Suggests)
-├── requirements.txt             # Dependências Python (auditoria/QC)
+├── NARRATIVA_FINAL_OFICIAL.md           # Narrativa oficial (3 passos)
+├── JUSTIFICATIVA_CIENTIFICA.md          # Racional científico do desenho
+├── IMPLICACOES_CLINICAS_ENFERMAGEM.md   # Implicações clínicas e de enfermagem
+├── ANALISES_BIOINFORMATICA_PASSO_A_PASSO.md  # Guia passo a passo (7 análises)
+├── TODO_FUTURE_ANALYSES.md              # Roadmap de análises futuras
+├── README.md                            # Este documento
+├── AUDIT_REPORT.md                      # Auditoria de dados (pré-commit)
+├── config.yaml                          # Thresholds + contexto centralizados
+├── DESCRIPTION                          # Dependências R (Imports/Suggests)
+├── requirements.txt                     # Dependências Python (auditoria/QC)
 ├── .gitignore
-├── TODO_FUTURE_ANALYSES.md      # Roadmap de próximas análises
 │
 ├── script.R                     # PIPELINE DOWNSTREAM (PASSO 3): DGB → ranking → figuras → PPI
 ├── scripts/
