@@ -13,7 +13,7 @@
 # 0. Contexto do projeto (fluxo analitico definitivo)
 # ------------------------------------------------------------------------------
 project:
-  title: "Ranqueamento Farmacogenomico in silico de Farmacos Moduladores da Expressao do Gene NQO1"
+  title: "NQO1 na Cardiomiopatia Dilatada e o Repressor Farmacologico Doxorrubicina"
   dataset: "GSE116250 (RNA-seq, miocardio humano, nao microarray)"
   cohort:
     CTRL: 14    # non-failing (tambem rotulado como NF)
@@ -23,13 +23,21 @@ project:
     non-failing: "CTRL"
     NF: "CTRL"
     CTRL: "CTRL"
+  # Fluxo logico do estudo (3 passos)
+  steps:
+    passo1: "Analise exploratoria da via AMPK (hsa04152) na DCM — NAO significativa (GSEA NES=-1.19, padj=0.419)"
+    passo2: "Expressao diferencial do transcriptoma completo -> NQO1 downregulado (log2FC=-1.686, padj=6.86e-13)"
+    passo3: "DGB (CMAP/LINCS/CREEDS) -> Doxorrubicina (q=2.21e-28, down, 2 bases)"
   target_gene: "NQO1"
-  target_gene_direction_in_DCM: "down"   # log2FC ~ -1.69 (NQO1 NAO pertence a via AMPK)
+  target_gene_log2fc: -1.686
+  target_gene_padj: 6.86e-13
+  target_gene_direction_in_DCM: "down"   # NQO1 NAO pertence a via AMPK
   ampk_pathway_kegg_id: "hsa04152"
   ampk_gsea_padj: 0.419                   # via AMPK NAO significativa (FDR > 0.05)
   drug_gene_tool: "Drug Gene Budger (DGB)"
   dgb_sources: ["CMAP", "LINCS L1000", "CREEDS"]
-  top_drug: "doxorubicina (downregulador de NQO1; CREEDS + LINCS L1000)"
+  top_drug: "doxorubicina (downregulador de NQO1; q=2.21e-28; CREEDS + LINCS L1000)"
+  ranking_note: "trichostatin A tem q=0 por underflow (fonte unica CMAP); doxorrubicina e o menor q-value real"
 
 # ------------------------------------------------------------------------------
 # 1. Thresholds de viabilidade celular (MTT / SRB / resazurina)

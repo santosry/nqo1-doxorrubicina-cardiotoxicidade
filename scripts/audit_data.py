@@ -177,6 +177,33 @@ def main() -> dict:
             "significant": bool(float(gsea["padj"].iloc[0]) < CFG["missing_threshold"]),
         }
 
+    # ------------------------------------------- 8. Integridade dos outputs finais
+    ampk_dir = ROOT / "output" / "tables" / "ampk"
+    nqo1_dir = ROOT / "output" / "tables" / "nqo1"
+
+    def _csv_stats(path):
+        if not path.exists():
+            return {"present": False}
+        try:
+            df = pd.read_csv(path)
+            return {"present": True, "rows": int(len(df)), "cols": int(df.shape[1])}
+        except Exception as e:  # noqa: BLE001
+            return {"present": True, "error": str(e)}
+
+    gsva_new = ampk_dir / "GSVA_AMPK_results.csv"
+    gsva_old = ampk_dir / "GSVA_AMPK_scores_per_sample.csv"
+    gsva_path = gsva_new if gsva_new.exists() else gsva_old
+
+    report["outputs_integrity"] = {
+        "DEG_full_table.csv": _csv_stats(ampk_dir / "DEG_full_table.csv"),
+        "NQO1_results.csv": _csv_stats(ampk_dir / "NQO1_results.csv"),
+        "DEG_AMPK_pathway.csv": _csv_stats(ampk_dir / "DEG_AMPK_pathway.csv"),
+        "GSEA_AMPK_results.csv": _csv_stats(ampk_dir / "GSEA_AMPK_results.csv"),
+        "GSVA_AMPK_results.csv": _csv_stats(gsva_path),
+        "DGB_results_NQO1.xlsx": {"present": (nqo1_dir / "DGB_results_NQO1.xlsx").exists()},
+        "doxorubicin_NQO1_summary.csv": _csv_stats(nqo1_dir / "doxorubicin_NQO1_summary.csv"),
+    }
+
     return report
 
 
@@ -201,6 +228,8 @@ def print_report(rep: dict) -> None:
     print(json.dumps(rep.get("ppi", {}), indent=2))
     sec("8. GSEA AMPK")
     print(json.dumps(rep.get("gsea_ampk", {}), indent=2))
+    sec("9. Integridade dos outputs finais")
+    print(json.dumps(rep.get("outputs_integrity", {}), indent=2, ensure_ascii=False))
 
 
 if __name__ == "__main__":
