@@ -118,6 +118,7 @@ require_pkg("stringr")
 require_pkg("openxlsx")
 require_pkg("igraph")
 require_pkg("tidyr")
+require_pkg("data.table")
 
 find_first_existing <- function(paths, required = TRUE, label = "arquivo") {
   existing <- paths[file.exists(paths)]
@@ -207,6 +208,10 @@ read_nqo1_xlsx <- function(path) {
 
   out <- lapply(sheets, function(sheet) {
     df <- openxlsx::read.xlsx(path, sheet = sheet)
+    # Remove coluna-indice residual (1a coluna sem nome, lida como X1 pela openxlsx).
+    if (ncol(df) > 0 && grepl("^X\\d+$", names(df)[1])) {
+      df <- df[, -1, drop = FALSE]
+    }
     names(df) <- standardize_names(names(df))
 
     if (!"Drug_Name" %in% names(df)) stop("Aba sem coluna Drug Name: ", sheet)
@@ -241,9 +246,15 @@ read_nqo1_xlsx <- function(path) {
       p_value = decimal_to_numeric(p_value),
       q_value = decimal_to_numeric(q_value),
       Fold_Change = decimal_to_numeric(Fold_Change),
+      # Fold_Change do DGB e um ESCORE SINALIZADO (sinal = direcao), nao uma razao
+      # de fold-change classica. Mantemos o nome por compatibilidade e adicionamos
+      # semantica explicita (effect_score) + uma derivada em escala log2.
+      effect_score = Fold_Change,
+      log2FC_derived = sign(Fold_Change) * log2(abs(Fold_Change) + 1),
       q_value_for_plot = pmax(q_value, 1e-50),
       neg_log10_q_capped = q_to_neglog10(q_value, cap = 50),
       q_was_zero = !is.na(q_value) & q_value == 0,
+      q_value_raw = ifelse(!is.na(q_value) & q_value == 0, "<1e-300", as.character(q_value)),
       regulation = dplyr::case_when(
         Fold_Change > 0 ~ "Upregula NQO1",
         Fold_Change < 0 ~ "Downregula NQO1",
@@ -480,7 +491,7 @@ plot_ppi_network <- function() {
   genes <- unique(deg$gene)
 
   audit_log("INFO", "ppi", "Lendo STRING protein info.")
-  info <- utils::read.delim(gzfile(info_path), quote = "", stringsAsFactors = FALSE)
+  info <- as.data.frame(data.table::fread(info_path, quote = "", stringsAsFactors = FALSE))
   names(info) <- standardize_names(names(info))
   if ("X_string_protein_id" %in% names(info)) {
     names(info)[names(info) == "X_string_protein_id"] <- "string_protein_id"
@@ -495,7 +506,7 @@ plot_ppi_network <- function() {
   }
 
   audit_log("INFO", "ppi", "Lendo STRING links.")
-  links <- utils::read.table(gzfile(links_path), header = TRUE, stringsAsFactors = FALSE)
+  links <- as.data.frame(data.table::fread(links_path, header = TRUE, stringsAsFactors = FALSE))
   names(links) <- standardize_names(names(links))
   ids <- unique(info_sub$string_protein_id)
   links_sub <- links |>

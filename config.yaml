@@ -10,6 +10,28 @@
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
+# 0. Contexto do projeto (fluxo analitico definitivo)
+# ------------------------------------------------------------------------------
+project:
+  title: "Ranqueamento Farmacogenomico in silico de Farmacos Moduladores da Expressao do Gene NQO1"
+  dataset: "GSE116250 (RNA-seq, miocardio humano, nao microarray)"
+  cohort:
+    CTRL: 14    # non-failing (tambem rotulado como NF)
+    DCM: 37     # dilated cardiomyopathy
+    ICM: 13     # ischemic cardiomyopathy (excluido do contraste DCM vs CTRL)
+  group_label_map:
+    non-failing: "CTRL"
+    NF: "CTRL"
+    CTRL: "CTRL"
+  target_gene: "NQO1"
+  target_gene_direction_in_DCM: "down"   # log2FC ~ -1.69 (NQO1 NAO pertence a via AMPK)
+  ampk_pathway_kegg_id: "hsa04152"
+  ampk_gsea_padj: 0.419                   # via AMPK NAO significativa (FDR > 0.05)
+  drug_gene_tool: "Drug Gene Budger (DGB)"
+  dgb_sources: ["CMAP", "LINCS L1000", "CREEDS"]
+  top_drug: "doxorubicina (downregulador de NQO1; CREEDS + LINCS L1000)"
+
+# ------------------------------------------------------------------------------
 # 1. Thresholds de viabilidade celular (MTT / SRB / resazurina)
 #    OBS.: o dataset atual (GSE116250) NAO contem ensaio de viabilidade.
 #    Estes limites se aplicam caso um ensaio de viabilidade seja incorporado.

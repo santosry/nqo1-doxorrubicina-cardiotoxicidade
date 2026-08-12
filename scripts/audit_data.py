@@ -68,10 +68,14 @@ def main() -> dict:
         "shape": list(dgb.shape),
         "duplicated_rows": int(dgb.duplicated().sum()),
         "missing_pct_gt5": pct_na(dgb)[pct_na(dgb) > 5].round(2).to_dict(),
-        "index_col_X1_unique": int(dgb["X1"].nunique()),
-        "index_col_X1_duplicated": int(dgb["X1"].duplicated().sum()),
+        "index_col_X1_present": "X1" in dgb.columns,
+        "index_col_X1_unique": int(dgb["X1"].nunique()) if "X1" in dgb.columns else 0,
+        "index_col_X1_duplicated": int(dgb["X1"].duplicated().sum()) if "X1" in dgb.columns else 0,
         "q_value_zero": int((dgb["q_value"] == 0).sum()),
         "p_value_zero": int((dgb["p_value"] == 0).sum()),
+        "has_effect_score": "effect_score" in dgb.columns,
+        "has_log2FC_derived": "log2FC_derived" in dgb.columns,
+        "has_q_value_raw": "q_value_raw" in dgb.columns,
     }
 
     doxo = dgb[dgb["Drug_Name_Norm"].str.contains("doxo", na=False)]

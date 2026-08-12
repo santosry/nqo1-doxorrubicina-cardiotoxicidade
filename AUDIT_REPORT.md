@@ -50,14 +50,21 @@ A coluna `Fold_Change` em `DGB_results_NQO1_from_xlsx_clean.csv` **não é uma r
 
 ## 2. Incongruências de Rótulo
 
-### 2.1 [CRÍTICO] Narrativa × dados — "Doxo vs Controle" inexistente na expressão
-O repositório é intitulado **cardiotoxicidade por doxorrubicina**, porém o único dado de expressão primário (`GSE116250`) é um estudo de **insuficiência cardíaca humana** (DCM/ICM vs. não-falha), **sem qualquer tratamento com doxorrubicina**.
+### 2.1 [CORRIGIDO] Fluxo analítico definitivo e divergências de rótulo
+Após a auditoria forense e a clarificação do autor, o fluxo correto é:
 
-- Grupos reais: `non-failing` (NF, n=14), `dilated cardiomyopathy` (DCM, n=37), `ischemic cardiomyopathy` (ICM, n=13). Total 64 amostras.
-- Não há rótulo `Doxo` nem `Controle` (tratamento) no dataset de expressão.
-- A associação **doxorrubicina ↔ NQO1** vem exclusivamente de bancos de assinatura farmacológica (**LINCS L1000** e **CREEDS**), não de um ensaio de cardiotoxicidade próprio.
+1. **DE do transcriptoma completo** (GSE116250, RNA-seq) → NQO1 = 2º gene mais desregulado, **DOWNREGULADO** na DCM (`log2FC = −1,686`).
+2. **Via AMPK (hsa04152)** avaliada por GSEA/GSVA → **não significativa** (padj = 0,419).
+3. **NQO1 NÃO pertence à via AMPK** — foi selecionada a partir do transcriptoma completo, por relevância redox.
+4. **DGB** (CMAP/LINCS/CREEDS) → **doxorrubicina** = downregulador de NQO1 (q = 2,21 × 10⁻²⁸).
 
-**Conclusão:** a hipótese "NQO1 modula cardiotoxicidade por doxorrubicina" é **indireta** no estado atual. O README deve deixar isso explícito para não induzir o leitor a concluir que houve um modelo experimental de doxorrubicina.
+Divergências históricas detectadas e corrigidas:
+- O dataset `GSE116250` é **RNA-seq** (não "microarranjos", como aparece em versões antigas do texto).
+- NQO1 é **down** (não "up") na DCM.
+- NQO1 **não** foi filtrada a partir da via AMPK.
+- Não há rótulo `Doxo` × `Controle` no dataset de expressão; a associação doxorrubicina↔NQO1 vem das bases DGB (LINCS L1000 + CREEDS).
+
+**Conclusão:** a hipótese de cardiotoxicidade é **indireta/integrativa** e deve ser assim apresentada.
 
 ### 2.2 Deriva de rótulo do grupo controle (3 nomes para o mesmo grupo)
 | Fonte | Rótulo do grupo controle |

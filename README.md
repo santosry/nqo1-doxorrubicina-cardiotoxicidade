@@ -1,227 +1,207 @@
-# NQO1 como Modulador da Cardiotoxicidade por Doxorrubicina
+# Ranqueamento Farmacogenômico in silico de Fármacos Moduladores da Expressão do Gene NQO1
 
-**Repositório:** `nqo1-doxorrubicina-cardiotoxicidade`
-**Status:** dados íntegros · auditoria pré-commit concluída (ver [`AUDIT_REPORT.md`](AUDIT_REPORT.md))
+**Integração das bases CMAP, LINCS L1000 e CREEDS via Drug Gene Budger (DGB)**
+
+Repositório: `nqo1-doxorrubicina-cardiotoxicidade` · Status: auditoria pré-commit concluída (ver [`AUDIT_REPORT.md`](AUDIT_REPORT.md))
 
 ---
 
 ## 1. Resumo Executivo
 
-A **NQO1** (NAD(P)H quinona desidrogenase 1) é uma flavoproteína com papel ambíguo na toxicidade de quinonas: em doses fisiológicas atua como **antioxidante/desintoxicante**, mas em contextos de estresse redox pode agir como **pró-fármaco redutor (bioativação)**. A **doxorrubicina**, antraciclina de primeira linha, tem sua **cardiotoxicidade** classicamente associada à geração de espécies reativas de oxigênio e à formação de metabólitos semiquinona — um processo em que a NQO1 participa diretamente da ciclagem redox.
+A **NQO1** (NAD(P)H quinona desidrogenase 1) é uma enzima citoprotetora que catalisa a redução bieletrônica de quinonas, prevenindo a formação de espécies reativas de oxigênio. Em uma análise prévia de expressão do miocárdio humano, a NQO1 mostrou-se **significativamente reprimida na cardiomiopatia dilatada (DCM)**, o que motivou sua investigação como alvo farmacogenômico.
 
-Este repositório investiga, de forma **exploratória e integrativa**, se a modulação farmacológica e a expressão de NQO1 se correlacionam com o contexto cardiotóxico. O projeto combina três camadas de evidência:
-
-1. **Expressão diferencial de NQO1** em miocárdio humano (GEO `GSE116250`, RNA-seq, n = 64) — a NQO1 está **significativamente reduzida** na cardiomiopatia dilatada (DCM): `log2FC = −1.69`, `padj = 6.86e-13`.
-2. **Assinaturas farmacológicas** (CMAP, LINCS L1000, CREEDS) — a **doxorrubicina downregula NQO1** (`mean_fc = −1.07`, `q = 2.21e-28`, 15 registros).
-3. **Rede de interação proteína–proteína (PPI)** da via AMPK (STRING v11.5) como contexto de estresse metabólico cardíaco.
-
-> ⚠️ **Transparência de escopo (leia antes de prosseguir):** o dataset de expressão primário (`GSE116250`) é de **insuficiência cardíaca humana (DCM/ICM vs. não-falha)**, **não** um modelo experimental tratado com doxorrubicina. **Não há rótulo `Doxo` × `Controle`** no dado de expressão. A ligação doxorrubicina ↔ NQO1 provém de bancos de assinatura farmacológica. Portanto, a hipótese de cardiotoxicidade é sustentada de forma **indireta/integrativa** e deve ser lida como tal. Detalhes em [`AUDIT_REPORT.md`](AUDIT_REPORT.md) §2.1.
+O estudo integra três bases de assinaturas transcriptômicas de perturbação por fármacos (**CMAP**, **LINCS L1000**, **CREEDS**) por meio da plataforma **Drug Gene Budger (DGB)**, identificando e ranqueando compostos capazes de modular a transcrição de NQO1. Entre os moduladores, a **doxorrubicina** destacou-se como o **repressor transcricional mais significativo de NQO1** (q = 2,21 × 10⁻²⁸; Fold Change médio = −1,065), com evidência convergente em duas plataformas independentes (CREEDS e LINCS L1000).
 
 ---
 
-## 2. Estrutura do Repositório
+## 2. Fluxo Analítico Definitivo (passo a passo)
+
+> Esta seção registra **exatamente** o que foi feito, com as correções de auditoria aplicadas.
+
+### Etapa 1 — Expressão diferencial do transcriptoma completo (GSE116250)
+Foi realizada a análise de expressão diferencial do transcriptoma humano (GSE116250, **RNA-seq**, 64 amostras: 14 não-falha, 37 DCM, 13 ICM) com o pacote **limma**.
+
+- O gene **NQO1** foi identificado como o **2º gene mais significativamente desregulado**, com **expressão REDUZIDA na DCM** (`log2FoldChange = −1,686`; `padj = 6,86 × 10⁻¹³`).
+- ⚠️ **Correção importante:** NQO1 está **DOWNREGULADO** (e não upregulado). A direção negativa indica menor expressão no miocárdio patológico.
+
+### Etapa 2 — Caracterização da via AMPK (hsa04152, KEGG)
+Paralelamente, a via de sinalização **AMPK** (hsa04152) foi avaliada por **GSEA** e **GSVA**.
+
+- A via AMPK **NÃO apresentou enriquecimento estatisticamente significativo** (`NES = −1,19`; `p = 0,125`; `padj = 0,419`).
+- ⚠️ **Correção importante:** a NQO1 **NÃO pertence à via canônica AMPK (hsa04152)**. Ela foi selecionada a partir da análise do **transcriptoma completo** (Etapa 1), por sua relevância funcional na citoproteção redox — e não por ter sido "filtrada da via AMPK".
+
+### Etapa 3 — Seleção do alvo NQO1
+A NQO1 foi escolhida como alvo da triagem farmacogenômica com base em: (i) forte significância no DEG (padj = 6,86 × 10⁻¹³); e (ii) papel citoprotetor/redox, com relação direta à cardiotoxicidade por antraciclinas.
+
+### Etapa 4 — Varredura farmacogenômica no Drug Gene Budger (DGB)
+O gene NQO1 foi submetido à varredura de assinaturas de perturbação por xenobióticos no **DGB**, integrando **CMAP**, **LINCS L1000** e **CREEDS**.
+
+- **3.523 registros válidos** · **1.266 fármacos únicos** (pós-unificação case-insensitive).
+- Concentrações 0,1–1000 µM · tempos 6 h/24 h · linhagens MCF7, PC3, VCAP, entre outras.
+
+### Etapa 5 — Ranqueamento e identificação da doxorrubicina
+Um escore composto (`score = −log₁₀(q-value) × |Fold Change|`) integrou significância e magnitude. O ranking foi ordenado por q-value mínimo e escore.
+
+- **Doxorrubicina** = repressor de NQO1 mais significativo com q-value real (não-zero) mais baixo (q = 2,21 × 10⁻²⁸), convergente em **CREEDS + LINCS L1000** (n = 15 registros).
+- O topo do ranking inclui ainda trichostatin A (up; CMAP), parthenolide (up; LINCS) e panobinostat (down; LINCS) — ver `output/tables/nqo1/top20_drugs_NQO1.csv`.
+
+> **Leitura correta do "mais significativo":** trichostatin A tem q = 0 (artefato de *underflow*, capado em 10⁻⁵⁰, fonte única CMAP). A doxorrubicina tem o **menor q-value real** (2,21 × 10⁻²⁸) e é o único do top 5 com evidência convergente em **duas bases independentes**.
+
+---
+
+## 3. Estrutura do Repositório
 
 ```
 .
-├── config.yaml                  # Thresholds centralizados (viabilidade, FC, Z, FDR, ML)
+├── config.yaml                  # Thresholds + contexto do projeto centralizados
+├── DESCRIPTION                  # Manifesto de dependências R (Imports/Suggests)
 ├── requirements.txt             # Dependências Python (auditoria/QC)
-├── AUDIT_REPORT.md              # Relatório de auditoria de dados (pré-commit)
+├── AUDIT_REPORT.md              # Auditoria de dados (pré-commit)
 ├── README.md                    # Este documento
-├── .gitignore                   # Lixo de SO/IDE/cache/segredos
-├── script.R                     # Pipeline analítico principal (R)
-│
-├── data/
-│   └── raw/                     # DADOS BRUTOS — nunca editar manualmente
-│       ├── GSE116250_rpkm.txt.gz             # Matriz de expressão RPKM (RNA-seq)
-│       ├── GSE116250_series_matrix.txt.gz    # Metadados GEO (série)
-│       ├── GPL16791.soft.gz                  # Anotação da plataforma
-│       └── 9606.protein.{info,links,aliases}.v11.5.*.gz  # STRING v11.5 (PPI)
-│
-├── output/
-│   ├── tables/
-│   │   ├── nqo1/                # Tabelas NQO1 × fármacos (ranking, top20, doxo)
-│   │   ├── ampk/                # DEG, GSEA, GSVA e fenotipagem da via AMPK
-│   │   ├── pubchem/             # Associação gene–composto (PubChem)
-│   │   └── ppi/                 # Nós e arestas da rede PPI AMPK
-│   ├── figures/
-│   │   ├── nqo1_drug_regulation/  # Volcano + dose-response NQO1
-│   │   ├── ampk/                  # Volcano, heatmaps, GSEA/GSVA
-│   │   ├── pubchem/               # Lollipop/top genes por compostos
-│   │   └── ppi/                   # Rede PPI AMPK
-│   ├── rdata/                   # `preprocessed_microarray.RData`
-│   ├── audit/                   # Logs e relatórios de auditoria
-│   └── archive/                 # Resultados antigos, preservados p/ rastreio
-│
-└── (diretórios canônicos sugeridos para expandir o fluxo — ver §4)
-    ├── data/processed/          # Derivados limpos (log2/TMM, imputados)
-    ├── scripts/                 # Scripts auxiliares (auditoria, QC)
-    ├── results/                 # Objetos intermediários/tabelas finais
-    └── reports/                 # Relatórios HTML/PDF (Quarto/RMarkdown)
+├── .gitignore
+├── script.R                     # Pipeline downstream (DGB → ranking → figuras → PPI)
+├── scripts/
+│   ├── ampk_de_analysis.R       # RECONSTRUÍDO: DE + AMPK + NQO1 + GSEA/GSVA (upstream)
+│   └── audit_data.py            # Auditoria reprodutível (Python/pandas)
+├── reports/QC_report.qmd        # Relatório HTML de QC (Quarto/RMarkdown)
+├── data/raw/                    # DADOS BRUTOS (imutáveis)
+│   ├── GSE116250_rpkm.txt.gz             # RNA-seq RPKM (Cufflinks)
+│   ├── GSE116250_series_matrix.txt.gz    # Metadados GEO
+│   ├── GPL16791.soft.gz                  # Anotação de plataforma
+│   └── 9606.protein.*.v11.5.*.gz         # STRING v11.5 (PPI)
+└── output/
+    ├── tables/{nqo1,ampk,pubchem,ppi}/
+    ├── figures/{nqo1_drug_regulation,ampk,pubchem,ppi}/
+    ├── rdata/  audit/  archive/
 ```
-
-**Para que serve cada pasta:**
 
 | Pasta | Função |
 |---|---|
-| `data/raw/` | Dados **imutáveis** baixados de GEO/STRING. Qualquer transformação gera um novo arquivo em `data/processed/` ou `output/`, nunca sobrescreve aqui. |
-| `data/processed/` *(sugerido)* | Dados limpos/normalizados (log2/TMM, imputação, outliers tratados). |
-| `scripts/` | Scripts auxiliares reprodutíveis (auditoria, QC, ML). |
+| `data/raw/` | Dados imutáveis baixados de GEO/STRING. |
+| `scripts/` | Scripts reprodutíveis (upstream DE + downstream DGB + auditoria). |
 | `output/tables/` | Tabelas derivadas (DEG, ranking, GSEA, GSVA, PPI). |
-| `output/figures/` | Figuras prontas para publicação. |
-| `output/rdata/` | Objetos R serializados (`.RData`). |
-| `output/audit/` | Logs estruturados (`.csv`, `.log`) e relatórios de auditoria. |
-| `output/archive/` | Artefatos obsoletos preservados para rastreabilidade (não apagar). |
-| `results/` / `reports/` | Saídas finais e relatórios renderizados (HTML/PDF). |
+| `output/figures/` | Figuras para publicação. |
+| `output/audit/` | Logs (`.csv`, `.log`) e relatórios de auditoria. |
+| `output/archive/` | Artefatos antigos preservados para rastreio. |
 
 ---
 
-## 3. Fluxo Analítico Detalhado (Passo a Passo)
+## 4. Fluxo Analítico Detalhado
 
-O fluxo é **reproduzível por script** (`script.R`), sem nenhuma etapa manual em planilha.
+### 4.1 Pré-processamento
+1. **Leitura das 6 abas DGB** (`cmap/l1000/creeds` × `up/down`), com **remoção da coluna-índice residual `X1`** (melhoria aplicada).
+2. **Conversão robusta de tipos** (`decimal_to_numeric`), incluindo formato europeu de decimal.
+3. **Tratamento de `q = 0`**: cap de `−log₁₀(q)` em 50 e registro do valor bruto como `<1e-300` (`q_value_raw`).
+4. **Imputação de missing**: não aplicada (dados analíticos têm 0% de NA); método configurável (`imputation.method: knn`).
+5. **Outliers (|Z| > 3)**: sinalizados, não removidos; ranking usa estatística robusta.
+6. **Unificação case-insensitive** dos nomes de fármacos.
 
-### 3.1 Pré-processamento
+### 4.2 Análise Estatística
+- **DE (upstream):** limma com ajuste por **sexo + idade** (`~ 0 + group + sex + age`), contraste `DCM − CTRL`, FDR (Benjamini–Hochberg) α = 0,05.
+- **GSEA/GSVA:** via AMPK (hsa04152) — **não significativa** (padj = 0,419).
+- **Ranking DGB:** agregação por fármaco (`mean_fc`, `median_fc`, `min_q`, `score = −log₁₀(q) × |FC|`).
 
-1. **Leitura das abas da planilha NQO1** (`output/tables/nqo1/DGB_results_NQO1.xlsx`): 6 abas (`cmap/l1000/creeds` × `up/down`). Cada aba é lida, os nomes de coluna são padronizados (espaços → `_`, `-` → `_`, `.` → `_`) e recebem as colunas `source_database`, `source_sheet` e `expected_direction`.
-2. **Conversão de tipo robusta** (`decimal_to_numeric`): valores com vírgula decimal europeia (`"1,23"`) são normalizados para ponto; `p_value`, `q_value` e `Fold_Change` tornam-se numéricos.
-3. **Limpeza de `q-value = 0`**: valores de q exatamente zero (underflow numérico) são **capados** via `-log10(q)` limitado a 50 (`q_to_neglog10`), evitando distorção de escala no volcano plot.
-4. **Imputação de missing — método:** **não é aplicada imputação** às variáveis contínuas, pois os dados analíticos têm **0% de NA** (ver auditoria). As colunas de ID específico de banco (`CREEDS_ID`, `GEO_ID`, `DrugBank_ID`) têm NA por "não se aplica", não por ausência. Caso futuras variáveis contínuas apresentem missing > 5%, o `config.yaml` define o método (`imputation.method: knn`, `k = 5`).
-5. **Outliers — remoção/winsorização:** os outliers (|Z| > 3, `config.yaml` `outliers.z_score_threshold`) são **sinalizados, não removidos** por padrão. O ranking de fármacos usa estatística robusta (mínimo de q-value + escore), e os valores brutos permanecem em `data/raw/`. A ação configurável é `outliers.action: winsorize`.
-6. **Unificação de nomes de fármacos (case-insensitive):** `Doxorubicin` e `doxorubicin` são unificados por `Drug_Name_Norm`, evitando contagem dupla no ranking.
+### 4.3 Análise de Sensibilidade
+- Sexo (51♂ / 13♀) e idade (20–66) são **covariáveis** no modelo DE (melhoria aplicada).
+- ICM é **excluída do contraste DCM vs. CTRL** (documentado no `ampk_de_analysis.R`).
 
-### 3.2 Análise Estatística
-
-- **Contraste de dois grupos (DCM vs. controle):** os testes de expressão diferencial foram conduzidos com o framework **limma** (colunas `t`, `pvalue`, `padj`, `B` em `DEG_full_table.csv`). A escolha de teste paramétrico/robusto segue a distribuição dos dados (limma aplica moderadores de variância empírica).
-- **Correção de múltiplas comparações:** **Benjamini–Hochberg** (`statistics.multiple_testing_method: benjamini-hochberg`, FDR α = 0.05). Em `DEG_full_table.csv`, 485/41.842 genes são significativos (`padj < 0.05`).
-- **Ranking NQO1 × fármacos:** cada fármaco é agregado por `mean_fc`, `median_fc`, `min_p`, `min_q`, `n_tests`, `n_sources` e um `score = -log10(q) × |FC|`. Ordenação por `min_q` decrescente de significância.
-- **Tabela 1:** distribuição dos fármacos por plataforma (CMAP / LINCS L1000 / CREEDS / multi) × direção (up/down).
-
-#### Resultados-chave
-| Hipótese | Métrica | Valor | Veredito |
-|---|---|---|---|
-| NQO1 down em DCM | `log2FC` | −1.69 (padj 6.9e-13) | ✅ passa em FC>1.5 |
-| Doxorrubicina → NQO1 | `mean_fc` | −1.07 (q 2.2e-28) | 🟡 significativo, efeito médio <1.5× |
-| Via AMPK enriquecida | GSEA `NES` / `padj` | −1.19 / 0.419 | 🔴 **não significativo** |
-
-> O enriquecimento GSEA da via AMPK **não** atinge FDR < 0.05. Qualquer afirmação sobre "ativação/inibição da AMPK" deve ser evitada ou claramente rotulada como exploratória.
-
-### 3.3 Análise de Sensibilidade (estratificação)
-
-- **Sexo:** 51 ♂ / 13 ♀ em `pheno_data_raw.csv` (desequilíbrio relevante). A análise de sensibilidade por sexo **ainda não está implementada**; recomenda-se um modelo ajustado por sexo/idade no DE (`~ 0 + group + sex + age`) para verificar se o efeito de NQO1 é robusto.
-- **Idade:** faixa 20–66 anos (`age:ch1`). Recomenda-se análise de subgrupos por tercis de idade e por etiologia (DCM vs. ICM separadamente).
-- **Subgrupo ICM:** o GSVA da via AMPK foi calculado **excluindo ICM** (51 = 37 DCM + 14 CTRL), enquanto o DEG cobre as 64 amostras. Documentar e justificar essa exclusão (atualmente não está no script).
-
-### 3.4 Machine Learning (se aplicável)
-
-- **Status: não aplicável ao estado atual** — não há variável-alvo rotulada de cardiotoxicidade/viabilidade (ver `config.yaml` `machine_learning.enabled: false`).
-- **Plano:** se um ensaio de viabilidade (MTT/SRB) rotulado (`Doxo` × `Controle`) for incorporado, o fluxo previsto é:
-  1. Modelo preditivo de cardiotoxicidade: **Random Forest** ou **Regressão Logística** (configurável em `config.yaml`).
-  2. Importância de variáveis via **SHAP** (`shap`).
-  3. Split treino/teste 75/25, seed 42.
+### 4.4 Machine Learning
+Não aplicável no estado atual (sem alvo rotulado de viabilidade). Plano (Random Forest/Regressão Logística + SHAP) configurável em `config.yaml`.
 
 ---
 
-## 4. Instruções de Reprodução
+## 5. Instruções de Reprodução
 
-### 4.1 Pré-requisitos
-
-**R ≥ 4.2** com os pacotes:
-
+### 5.1 Dependências
 ```r
-install.packages(c("dplyr", "ggplot2", "stringr", "openxlsx", "igraph", "tidyr", "yaml"))
+# R (pipeline): ver DESCRIPTION. Instalação mínima:
+install.packages(c("dplyr","ggplot2","stringr","openxlsx","igraph","tidyr","data.table","readr","yaml"))
+# Bioconductor (DE/GSEA/GSVA):
+if (!requireNamespace("BiocManager", quietly=TRUE)) install.packages("BiocManager")
+BiocManager::install(c("limma","edgeR","GSVA","fgsea","GEOquery"))
 ```
-
-**Python ≥ 3.10** (auditoria/QC):
-
 ```bash
+# Python (auditoria/QC):
 pip install -r requirements.txt
 ```
 
-### 4.2 Ordem de execução
+> **Reprodutibilidade total (renv):** para gerar o `renv.lock` com as versões exatas, rode
+> `renv::init()` seguido de `renv::snapshot()` na raiz do projeto. (O `DESCRIPTION` já lista
+> as dependências; o `renv.lock` deve ser gerado no ambiente R local.)
 
+### 5.2 Ordem de execução
 ```bash
-# 0) (opcional) clonar
-git clone https://github.com/santosry/nqo1-doxorrubicina-cardiotoxicidade.git
-cd nqo1-doxorrubicina-cardiotoxicidade
+# 1) UPSTREAM — expressão diferencial + via AMPK + NQO1 + GSEA/GSVA
+Rscript scripts/ampk_de_analysis.R
 
-# 1) Pipeline principal (R) — gera tabelas e figuras
-#    Windows (PowerShell):
-& 'C:\Program Files\R\R-4.6.0\bin\Rscript.exe' script.R
-#    Linux/macOS:
+# 2) DOWNSTREAM — DGB: leitura do XLSX, ranking, figuras, PPI
 Rscript script.R
 
-# 2) Auditoria de dados reprodutível (Python)
+# 3) Auditoria reprodutível
 python scripts/audit_data.py
 
-# 3) Relatório HTML de QC (rápido)
-#    Opção A — RMarkdown:
-Rscript -e 'rmarkdown::render("reports/QC_report.Rmd")'
-#    Opção B — Quarto:
-quarto render reports/QC_report.qmd
+# 4) Relatório HTML de QC
+quarto render reports/QC_report.qmd     # ou rmarkdown::render("reports/QC_report.Rmd")
 ```
 
-### 4.3 Consulta PubChem/NCBI (opcional, controlada por ambiente)
-
-Por padrão, o script usa os resultados PubChem já salvos em `output/tables/pubchem/`. Para refazer a consulta:
-
-```powershell
-$env:RUN_PUBCHEM_QUERY='true'
-$env:NCBI_API_KEY='sua_chave_ncbi_opcional'
-```
-
-> A chave NCBI **nunca** deve ser escrita no código — apenas no ambiente (e o `.gitignore` ignora arquivos de segredo).
-
-### 4.4 Configuração centralizada
-
-Todos os limiares estão em [`config.yaml`](config.yaml). Para alterar sem mexer no código:
-
-```yaml
-viability.doxo_alert_if_above: 0.8   # alerta se viabilidade Doxo > 0.8
-expression.fold_change_significant: 1.5
-outliers.z_score_threshold: 3.0
-statistics.fdr_alpha: 0.05
-```
-
-Carregar no R: `cfg <- yaml::read_yaml("config.yaml")`; no Python: `cfg = yaml.safe_load(open("config.yaml"))`.
+### 5.3 Consulta DGB/PubChem (opcional)
+Por padrão, o script usa `output/tables/nqo1/DGB_results_NQO1.xlsx` e os CSVs PubChem já salvos.
+Para refazer a consulta, usar variáveis de ambiente (`RUN_PUBCHEM_QUERY`, `NCBI_API_KEY`) — **nunca** chaves no código.
 
 ---
 
-## 5. Logging e Auditoria
+## 6. Verificação de Scripts e Resultados (o que existe × o que foi reconstruído)
 
-- O `script.R` registra cada etapa com **timestamp, nível e mensagem** em:
-  - console (`message()`),
-  - CSV estruturado `output/audit/audit_events_nqo1_pubchem_ppi.csv`,
-  - arquivo `.log` diário em `output/audit/logs/run_YYYYMMDD.log` (registra timestamp, `INFO`/`WARN`/`ERROR`).
-- O script auxiliar `scripts/audit_data.py` reproduz as checagens do [`AUDIT_REPORT.md`](AUDIT_REPORT.md).
+| Etapa | Script | Resultado | Status |
+|---|---|---|---|
+| Download GSE116250 | — (GEOquery) | `data/raw/GSE116250_*` | ✅ dado presente · script ausente |
+| DE (limma, DCM vs CTRL) | `scripts/ampk_de_analysis.R` | `DEG_full_table.csv` | 🔁 **reconstruído** |
+| Identificação da NQO1 | `scripts/ampk_de_analysis.R` | linha NQO1 no DEG | 🔁 **reconstruído** |
+| GSEA/GSVA via AMPK (hsa04152) | `scripts/ampk_de_analysis.R` | `GSEA_AMPK_results.csv`, `GSVA_AMPK_scores_per_sample.csv` | 🔁 **reconstruído** |
+| Consulta DGB (geração do XLSX) | ferramenta web DGB | `DGB_results_NQO1.xlsx` | ✅ dado presente · consulta externa |
+| Leitura/processamento do XLSX | `script.R` → `read_nqo1_xlsx()` | `DGB_results_NQO1_from_xlsx_clean.csv` | ✅ presente |
+| Ranking / top20 / doxo | `script.R` → `rank_nqo1_drugs()` | `ranking_drugs_NQO1.csv`, `top20_*`, `doxorubicin_NQO1_summary.csv` | ✅ presente |
+| Figuras (volcano, dose-response) | `script.R` | `volcano_NQO1_drugs.png`, `dose_response_NQO1_drugs.png` | ✅ presente |
+| PPI (STRING + igraph) | `script.R` → `plot_ppi_network()` | `PPI_AMPK_STRING_{nodes,edges}.csv`, `PPI_AMPK_network.png` | ✅ presente |
+| Auditoria de dados | `scripts/audit_data.py` | `AUDIT_REPORT.md` | ✅ presente |
+
+**Conclusão da verificação:** os **resultados** de todas as etapas estão presentes. Os **scripts upstream** (DE, GSEA/GSVA, consulta DGB) **não estavam versionados** — a etapa de DE/GSEA/GSVA foi **reconstruída** em `scripts/ampk_de_analysis.R`. A consulta DGB em si é uma ferramenta web externa (não é scriptável localmente), mas seu resultado (`DGB_results_NQO1.xlsx`) está preservado.
 
 ---
 
-## 6. Controle de Qualidade Visual (rápido)
+## 7. Melhorias implementadas (auditoria de código)
 
-Para gerar um relatório HTML com os principais gráficos de QC:
+1. ✅ Remoção da coluna-índice residual `X1` ao ler as abas do XLSX.
+2. ✅ Documentação de `Fold_Change` como **escore sinalizado** + colunas `effect_score` e `log2FC_derived`.
+3. ✅ Registro de `q_value == 0` como `<1e-300` (`q_value_raw`).
+4. ✅ Exclusão de ICM documentada no `ampk_de_analysis.R`.
+5. ✅ Padronização do grupo controle como `CTRL` (mapa `non-failing = NF = CTRL` em `config.yaml`).
+6. ✅ Proveniência da normalização documentada (`log2(RPKM+1)` + limma; nota sobre `voom` para contagens).
+7. ✅ Ajuste por covariáveis `sex + age` no modelo DE.
+8. ✅ Performance: `data.table::fread` nos `.gz` do STRING.
+9. ✅ `DESCRIPTION` (dependências R) + comando `renv::snapshot()` documentado.
+10. ✅ Ensaio de viabilidade (MTT/SRB) sinalizado como ausente; threshold pronto em `config.yaml`.
+
+---
+
+## 8. Controle de Qualidade Visual (rápido)
 
 ```bash
-quarto render reports/QC_report.qmd   # ou rmarkdown::render("reports/QC_report.Rmd")
+quarto render reports/QC_report.qmd
 ```
-
-Gráficos de QC sugeridos:
-
-1. **Boxplot antes/depois** da normalização (distribuição por amostra) — detecta escala/outliers.
-2. **PCA** (PC1 × PC2 colorido por grupo) — detecta *batch effect* / agrupamento biológico.
-3. **Densidade de expressão** por amostra — detecta amostras degradadas.
-4. **Heatmap de correlação** entre amostras — detecta amostras trocadas/duplicadas.
-5. **Barplot de % de genes detectados** por amostra.
+Gráficos: boxplot antes/depois da normalização · PCA (batch effect) · densidade por amostra · % de genes detectados.
 
 ---
 
-## 7. Declaração de Transparência Algorítmica
+## 9. Declaração de Transparência Algorítmica
 
 > *"Este projeto utilizou a ferramenta de Inteligência Artificial generativa **deepseek-v4-pro** para auxiliar na automação de tarefas repetitivas de codificação (scripting), na estruturação e correção sintática da documentação, bem como na geração de rotinas de auditoria de dados. O uso desta ferramenta está em conformidade com a Portaria CNPq nº 2.664/2026, que regulamenta o uso de IA em pesquisas financiadas pela agência, garantindo a revisão crítica e validação final por um pesquisador titular (humano) responsável pelos resultados."*
 
 ---
 
-## 8. Licença e Citação
+## 10. Dados e Citação
 
-- **Dados GEO:** `GSE116250` (Sweet et al., RNA-seq de miocárdio humano — DCM/ICM/não-falha).
-- **STRING v11.5:** Szklarczyk et al.
-- **Bancos de assinatura:** CMAP, LINCS L1000, CREEDS.
-- Licença do código: definir conforme política institucional antes da publicação.
+- **GSE116250** (Sweet et al.): RNA-seq de miocárdio humano (DCM/ICM/não-falha) — GEO/NCBI.
+- **STRING v11.5** (Szklarczyk et al.).
+- **CMAP** (Lamb et al., 2006) · **LINCS L1000** (Subramanian et al., 2017) · **CREEDS**.
+- **Drug Gene Budger (DGB)** (Wang et al., Bioinformatics, 2021).
