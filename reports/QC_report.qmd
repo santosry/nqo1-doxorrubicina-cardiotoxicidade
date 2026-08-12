@@ -1,0 +1,114 @@
+---
+title: "QC Report — NQO1 / Cardiotoxicidade por Doxorrubicina"
+format: html
+execute:
+  echo: false
+  warning: false
+---
+
+# Controle de Qualidade — Expressão (GSE116250)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width = 9, fig.height = 6)
+suppressPackageStartupMessages({
+  library(dplyr)
+  library(tidyr)
+  library(ggplot2)
+})
+```
+
+## 1. Leitura dos dados
+
+```{r load}
+rpkm <- read.delim(gzfile("data/raw/GSE116250_rpkm.txt.gz"),
+                   check.names = FALSE, stringsAsFactors = FALSE)
+
+# Matriz numérica: primeira coluna = Gene, segunda = Common_name
+expr <- rpkm[, -(1:2)]
+expr <- as.data.frame(lapply(expr, as.numeric))
+rownames(expr) <- rpkm$Common_name
+
+# Metadados
+pheno <- read.csv("output/tables/ampk/pheno_data_raw.csv", check.names = FALSE)
+pheno <- pheno |>
+  dplyr::select(title, `disease:ch1`, `Sex:ch1`, `age:ch1`) |>
+  dplyr::rename(sample = title, group = `disease:ch1`, sex = `Sex:ch1`, age = `age:ch1`)
+```
+
+## 2. Boxplot antes da normalização (escala linear RPKM)
+
+```{r box-before, fig.height=7}
+expr_long <- expr |>
+  tibble::rownames_to_column("gene") |>
+  tidyr::pivot_longer(-gene, names_to = "sample", values_to = "expr") |>
+  dplyr::left_join(pheno, by = "sample")
+
+ggplot(expr_long, aes(x = sample, y = expr + 1, fill = group)) +
+  geom_boxplot(outlier.size = 0.3, lwd = 0.2) +
+  scale_y_log10() +
+  labs(title = "Distribuição de expressão por amostra (RPKM, antes da normalização)",
+       y = "RPKM + 1 (log10)") +
+  theme_minimal(base_size = 11) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 6),
+        legend.position = "bottom")
+```
+
+## 3. Boxplot depois da normalização (log2(CPM/TMM) — sugerida)
+
+```{r box-after, fig.height=7}
+# Transformação reprodutível sugerida (config.yaml: normalization = log2-TMM)
+expr_log <- log2(expr + 1)
+expr_log_long <- expr_log |>
+  tibble::rownames_to_column("gene") |>
+  tidyr::pivot_longer(-gene, names_to = "sample", values_to = "expr") |>
+  dplyr::left_join(pheno, by = "sample")
+
+ggplot(expr_log_long, aes(x = sample, y = expr, fill = group)) +
+  geom_boxplot(outlier.size = 0.3, lwd = 0.2) +
+  labs(title = "Distribuição de expressão por amostra (log2(RPKM + 1))",
+       y = "log2(RPKM + 1)") +
+  theme_minimal(base_size = 11) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 6),
+        legend.position = "bottom")
+```
+
+## 4. PCA (detecção de batch effect)
+
+```{r pca, fig.height=6}
+# Remove genes com variância zero e centraliza
+expr_t <- t(expr_log)
+expr_t <- expr_t[, apply(expr_t, 2, sd, na.rm = TRUE) > 0]
+pca <- prcomp(expr_t, center = TRUE, scale. = TRUE)
+pca_df <- data.frame(sample = rownames(expr_t), PC1 = pca$x[, 1], PC2 = pca$x[, 2]) |>
+  dplyr::left_join(pheno, by = "sample")
+
+ggplot(pca_df, aes(x = PC1, y = PC2, color = group, shape = sex)) +
+  geom_point(size = 2.4) +
+  labs(title = "PCA — amostras GSE116250",
+       x = paste0("PC1 (", round(100 * summary(pca)$importance[2, 1], 1), "%)"),
+       y = paste0("PC2 (", round(100 * summary(pca)$importance[2, 2], 1), "%)")) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "bottom")
+```
+
+## 5. Percentual de genes detectados por amostra
+
+```{r detected}
+detected <- data.frame(
+  sample = colnames(expr),
+  pct_detected = 100 * colMeans(expr > 0)
+) |>
+  dplyr::left_join(pheno, by = "sample")
+
+ggplot(detected, aes(x = sample, y = pct_detected, fill = group)) +
+  geom_col() +
+  labs(title = "Percentual de genes detectados por amostra",
+       y = "% genes com RPKM > 0") +
+  theme_minimal(base_size = 11) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 6),
+        legend.position = "bottom")
+```
+
+---
+
+*Gerado automaticamente para auditoria de QC. Ver `AUDIT_REPORT.md` para os limiares configurados em `config.yaml`.*

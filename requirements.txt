@@ -1,0 +1,19 @@
+# ==============================================================================
+# requirements.txt — dependencias Python (ferramentas de auditoria e QC)
+#
+# Instalar com:  pip install -r requirements.txt
+#
+# O pipeline analitico principal e escrito em R (script.R). As dependencias R
+# estao documentadas no README.md (secao "Instrucoes de Reproducao") e podem ser
+# instaladas com:
+#   install.packages(c("dplyr","ggplot2","stringr","openxlsx","igraph","tidyr","yaml"))
+# ==============================================================================
+
+pandas>=2.0.0
+numpy>=1.24.0
+openpyxl>=3.1.0
+pyyaml>=6.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+scipy>=1.10.0
+scikit-learn>=1.2.0

@@ -1,0 +1,2 @@
+"Drug_Name_Norm","Drug_Name","mean_fc","median_fc","max_abs_fc","min_p_value","min_q_value","n_tests","n_sources","sources","score","direction"
+"doxorubicin","Doxorubicin",-1.065066,-0.806871,4.21316,5.07e-29,2.21e-28,15,2,"CREEDS; LINCS L1000",41.4095711168431,"Downregula NQO1"

@@ -1,0 +1,87 @@
+# ==============================================================================
+# config.yaml — Configuracao centralizada de thresholds do projeto
+# nqo1-doxorrubicina-cardiotoxicidade
+#
+# Objetivo: separar os parametros analiticos do codigo-fonte. O usuario pode
+# alterar qualquer threshold aqui sem tocar nos scripts (script.R / scripts/*).
+#
+# Leitura sugerida em R:   cfg <- yaml::read_yaml("config.yaml")
+# Leitura sugerida em Python: import yaml; cfg = yaml.safe_load(open("config.yaml"))
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Thresholds de viabilidade celular (MTT / SRB / resazurina)
+#    OBS.: o dataset atual (GSE116250) NAO contem ensaio de viabilidade.
+#    Estes limites se aplicam caso um ensaio de viabilidade seja incorporado.
+# ------------------------------------------------------------------------------
+viability:
+  assay: "MTT/SRB"                       # ensaio esperado; ajuste se usar resazurina
+  control_mean_min: 0.9                  # media do grupo Controle (normalizado)
+  control_mean_max: 1.1                  # media do grupo Controle (normalizado)
+  doxo_alert_if_above: 0.8               # ALERTA CRITICO se viabilidade Doxo > 0.8
+  significant_drop_min: 0.2              # queda minima esperada (Controle - Doxo)
+
+# ------------------------------------------------------------------------------
+# 2. Thresholds de expressao genica (qPCR / RNA-seq)
+# ------------------------------------------------------------------------------
+expression:
+  fold_change_significant: 1.5           # |FC| > 1.5 => significativo (benchmark)
+  log2fc_significant: 0.585              # log2(1.5), para dados em escala log2
+  padj_alpha: 0.05                       # FDR alvo
+  log2fc_direction:
+    up: 0.585
+    down: -0.585
+
+# ------------------------------------------------------------------------------
+# 3. Outliers (Z-score)
+# ------------------------------------------------------------------------------
+outliers:
+  z_score_threshold: 3.0                 # |Z| > 3.0 => outlier reportado
+  action: "winsorize"                    # opcoes: "winsorize" | "remove" | "flag_only"
+
+# ------------------------------------------------------------------------------
+# 4. Testes estatisticos e correcao multipla
+# ------------------------------------------------------------------------------
+statistics:
+  two_group_test: "wilcoxon"             # "t_test" | "wilcoxon"
+  multi_group_test: "anova"              # "anova" | "kruskal"
+  multiple_testing_method: "benjamini-hochberg"   # FDR (BH)
+  fdr_alpha: 0.05
+
+# ------------------------------------------------------------------------------
+# 5. Normalizacao de expressao
+# ------------------------------------------------------------------------------
+normalization:
+  expected: "log2-TMM"                   # metodo esperado para RNA-seq
+  rna_seq_method: "TMM"                  # TMM | RLE | quantile
+  transform: "log2"                      # log2 | vst | rlog
+  warn_if_not_normalized: true
+
+# ------------------------------------------------------------------------------
+# 6. Imputacao de dados faltantes (pre-processamento)
+# ------------------------------------------------------------------------------
+imputation:
+  method: "knn"                          # "knn" | "mean" | "median" | "mice"
+  k_neighbors: 5
+  missing_threshold_report: 0.05         # alerta se % NA > 5% por variavel
+
+# ------------------------------------------------------------------------------
+# 7. Machine learning (se aplicavel)
+# ------------------------------------------------------------------------------
+machine_learning:
+  enabled: false                         # nao ha ensaio de viabilidade rotulado no projeto
+  model: "random_forest"                 # "random_forest" | "logistic_regression"
+  test_split: 0.25
+  seed: 42
+  shap: true
+
+# ------------------------------------------------------------------------------
+# 8. Entradas / saidas
+# ------------------------------------------------------------------------------
+paths:
+  raw_data: "data/raw"
+  processed_data: "data/processed"       # ainda nao criado; ver README
+  scripts: "scripts"
+  results: "results"
+  reports: "reports"
+  outputs: "output"
